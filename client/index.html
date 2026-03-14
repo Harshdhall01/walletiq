@@ -184,6 +184,23 @@ footer{text-align:center;padding:28px 16px;font-size:11px;color:rgba(200,168,122
   <div class="nav-right">
     <span class="nav-sub">AI WALLET ANALYZER</span>
     <div class="badge">INNOVAT3</div>
+<button onclick="connectWallet()" id="connect-btn" style="
+  background: transparent;
+  border: 2px solid #f7931a;
+  color: #f7931a;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-left: 16px;
+  font-family: inherit;
+  letter-spacing: 1px;
+" onmouseover="this.style.background='#f7931a';this.style.color='#000'"
+   onmouseout="this.style.background='transparent';this.style.color='#f7931a'">
+  🦊 CONNECT WALLET
+</button>
   </div>
 </nav>
 
@@ -652,5 +669,47 @@ document.getElementById('compare-input-b').addEventListener('keydown',function(e
 
 initReveal();
 </script>
+
+<script>
+async function connectWallet() {
+  const btn = document.getElementById('connect-btn');
+  if (!window.ethereum) {
+    alert('Please install MetaMask!\nhttps://metamask.io');
+    return;
+  }
+  try {
+    btn.innerHTML = '⏳ Connecting...';
+    const accounts = await window.ethereum.request({
+      method: 'eth_requestAccounts'
+    });
+    const address = accounts[0];
+    const input = document.querySelector('input[type="text"]') || 
+                  document.getElementById('wallet-input') ||
+                  document.querySelector('.wallet-input');
+    if (input) {
+      input.value = address;
+    }
+    btn.innerHTML = '✅ ' + address.slice(0,6) + '...' + address.slice(-4);
+    btn.style.borderColor = '#00ff88';
+    btn.style.color = '#00ff88';
+    if (typeof analyze === 'function') analyze();
+    else if (typeof analyzeWallet === 'function') analyzeWallet();
+  } catch (err) {
+    btn.innerHTML = '🦊 CONNECT WALLET';
+    alert('Connection rejected!');
+  }
+}
+
+if (window.ethereum) {
+  window.ethereum.on('accountsChanged', function(accounts) {
+    if (accounts.length === 0) {
+      document.getElementById('connect-btn').innerHTML = '🦊 CONNECT WALLET';
+      document.getElementById('connect-btn').style.borderColor = '#f7931a';
+      document.getElementById('connect-btn').style.color = '#f7931a';
+    }
+  });
+}
+</script>
+
 </body>
 </html>
