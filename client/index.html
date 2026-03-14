@@ -498,7 +498,7 @@ loadHistory();
 
 /* FEATURE 3 - WALLET COMPARISON */
 async function fetchWalletData(address){
-  var res=await fetch('http://localhost:5000/api/wallet/analyze',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({address:address})});
+  var res=await fetch('https://walletiq-zxl3.onrender.com/api/wallet/analyze',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({address:address})});
   if(!res.ok)throw new Error('API error');
   return res.json();
 }
@@ -640,7 +640,7 @@ async function analyze(){
   document.getElementById('btn-text').textContent='SCANNING';
   document.getElementById('analyze-btn').disabled=true;
   try{
-    var res=await fetch('http://localhost:5000/api/wallet/analyze',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({address:addr})});
+    var res=await fetch('https://walletiq-zxl3.onrender.com/api/wallet/analyze',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({address:addr})});
     if(!res.ok)throw new Error('API '+res.status);
     var data=await res.json();
     populateResults(data,addr);
