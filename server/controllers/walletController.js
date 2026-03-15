@@ -53,3 +53,51 @@ export async function analyzeWallet(req, res) {
     return res.status(500).json({ error: err.message });
   }
 }
+export async function chatWithWallet(req, res) {
+  const { address, message } = req.body;
+  if (!address || !message) {
+    return res.status(400).json({ error: 'Address and message required' });
+  }
+  try {
+    // Get wallet data from cache
+    const wallet = await Wallet.findOne({ address: address.toLowerCase() });
+    if (!wallet) {
+      return res.status(404).json({ error: 'Analyze wallet first!' });
+    }
+    // Import Groq
+    const Groq = (await import('groq-sdk')).default;
+    const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
+    const completion = await groq.chat.completions.create({
+      model: 'llama-3.3-70b-versatile',
+      messages: [
+        {
+          role: 'system',
+          content: `You are WalletIQ, an expert blockchain analyst. 
+          You are analyzing this Ethereum wallet:
+          Address: ${wallet.address}
+          Balance: ${wallet.balance} ETH
+          Total Transactions: ${wallet.totalTransactions}
+          Risk Score: ${wallet.riskScore}/100
+          Risk Level: ${wallet.riskLevel}
+          Activity Type: ${wallet.activityType}
+          Tags: ${wallet.tags?.join(', ')}
+          Red Flags: ${wallet.redFlags?.join(', ') || 'None'}
+          AI Summary: ${wallet.summary}
+          
+          Answer questions about this wallet clearly and concisely.
+          Keep responses under 3 sentences unless detail is needed.`
+        },
+        {
+          role: 'user',
+          content: message
+        }
+      ],
+      max_tokens: 300,
+    });
+    const reply = completion.choices[0].message.content;
+    return res.json({ reply });
+  } catch (err) {
+    console.error('Chat error:', err);
+    return res.status(500).json({ error: err.message });
+  }
+}
